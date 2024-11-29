@@ -7,9 +7,11 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const indexRouter_1 = __importDefault(require("./routes/indexRouter"));
+const mongodb_1 = __importDefault(require("./config/mongodb"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const port = process.env.PORT || 4000;
+(0, mongodb_1.default)();
 app.use((0, cors_1.default)({
     origin: process.env.FRONTEND_URL,
     credentials: true,
