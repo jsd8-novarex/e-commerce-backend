@@ -5,7 +5,7 @@ import router from './routes/indexRouter';
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const port = process.env.PORT || 4000;
 
 app.use(
   cors({
