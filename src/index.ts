@@ -2,10 +2,13 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import router from './routes/indexRouter';
+import mongodb from './config/mongodb';
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
+
+mongodb();
 
 app.use(
   cors({
