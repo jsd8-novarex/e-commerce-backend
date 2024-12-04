@@ -1,21 +1,23 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
+import {
+  getAllCustomers,
+  getCustomerById,
+  createCustomer,
+  updateCustomer,
+} from '../controllers/customerController';
 
-const customerRouter = express.Router();
+const router = express.Router();
 
-customerRouter.get('/', getCustomers);
+// GET: Fetch all customers
+router.get('/', getAllCustomers);
 
-export async function getCustomers(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    res.status(200).send({
-      message: 'test getCustomers',
-    });
-  } catch (error: any) {
-    res.status(400).send({ status: 'failure', message: error.message });
-  }
-}
+// GET: Fetch customer by ID
+router.get('/:id', getCustomerById);
 
-export default customerRouter;
+// POST: Create a new customer
+router.post('/', createCustomer);
+
+// PUT: Update customer by ID
+router.put('/:id', updateCustomer);
+
+export default router;
