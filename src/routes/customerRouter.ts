@@ -4,20 +4,18 @@ import {
   getCustomerById,
   createCustomer,
   updateCustomer,
+  getCustomerByEmail,
 } from '../controllers/customerController';
+import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-// GET: Fetch all customers
+router.use(authenticateToken);
+
 router.get('/', getAllCustomers);
-
-// GET: Fetch customer by ID
 router.get('/:id', getCustomerById);
-
-// POST: Create a new customer
 router.post('/', createCustomer);
-
-// PUT: Update customer by ID
 router.put('/:id', updateCustomer);
+router.get('/email/:email', getCustomerByEmail);
 
 export default router;
