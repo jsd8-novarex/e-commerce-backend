@@ -1,17 +1,19 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
+import {
+  getCartByCustomerId,
+  postCurrentCart,
+} from '../controllers/cartController';
+import { validateCustomerIdMiddleware } from '../middleware/customer/customerMiddleware';
+import { validateCartMiddleware } from '../middleware/cart/cartMiddleware';
 
-const getCartRouter = express.Router();
+const cartRouter = express.Router();
 
-getCartRouter.get('/', getCart);
+cartRouter.get('/', validateCustomerIdMiddleware, getCartByCustomerId);
+cartRouter.post(
+  '/',
+  validateCustomerIdMiddleware,
+  validateCartMiddleware,
+  postCurrentCart
+);
 
-export async function getCart(req: Request, res: Response, next: NextFunction) {
-  try {
-    res.status(200).send({
-      message: 'test getCart',
-    });
-  } catch (error: any) {
-    res.status(400).send({ status: 'failure', message: error.message });
-  }
-}
-
-export default getCartRouter;
+export default cartRouter;
