@@ -11,4 +11,7 @@ productRouter.get('/', productController_1.getProduct);
 // productRouter.get('/:id/:choiceId', getProductById);
 productRouter.post('/singleproduct', productController_1.getProductById);
 productRouter.post('/add', productController_1.addProduct);
+// เพิ่มเส้นทางสำหรับ PUT และ DELETE
+productRouter.put('/update/:id', productController_1.updateProduct); // อัปเดตสินค้าด้วย ID
+productRouter.delete('/delete/:id', productController_1.deleteProduct); // ลบสินค้าด้วย ID
 exports.default = productRouter;
