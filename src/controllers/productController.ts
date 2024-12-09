@@ -157,4 +157,4 @@ const addProduct = async (req: Request, res: Response) => {
   }
 };
 
-export { getProduct, getProductById,getProductChoice, addProduct };
+export { getProduct, getProductById, addProduct };
