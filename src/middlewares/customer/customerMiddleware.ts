@@ -8,14 +8,14 @@ const validateCustomerIdMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.body;
+    const { customerId } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(customerId)) {
       res.status(400).json({ success: false, message: 'Invalid customer ID' });
       return;
     }
 
-    const isCustomer = await customer.findById(id);
+    const isCustomer = await customer.findById(customerId);
     if (!isCustomer) {
       res.status(404).json({ success: false, message: 'Customer not found' });
       return;
