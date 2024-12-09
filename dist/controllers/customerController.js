@@ -157,42 +157,6 @@ const updateCustomer = async (req, res, next) => {
     }
 };
 exports.updateCustomer = updateCustomer;
-// export const getAllCustomers = async (req: Request, res: Response) => {
-//   const customers = await customerModel.find();
-//   res.status(200).json(customers);
-// };
-// export const getSignedInCustomer = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-//   try {
-//     const userId = req.user?.id; // ดึง id จาก JWT
-//     if (!userId) {
-//       res
-//         .status(400)
-//         .json({ message: 'Token ไม่ถูกต้อง หรือไม่มีข้อมูลผู้ใช้งาน' });
-//       return;
-//     }
-//     const customer = await customerModel.findById(userId);
-//     if (!customer) {
-//       res.status(404).json({ message: 'ไม่พบข้อมูลลูกค้า' });
-//       return;
-//     }
-//     const transformedCustomer = {
-//       ...customer.toObject(),
-//       create_timestamp: dayjs(customer.create_timestamp)
-//         .tz(THAI_TIMEZONE)
-//         .format('YYYY-MM-DD HH:mm:ss'),
-//       last_updated_timestamp: dayjs(customer.last_updated_timestamp)
-//         .tz(THAI_TIMEZONE)
-//         .format('YYYY-MM-DD HH:mm:ss'),
-//     };
-//     res.status(200).json({ status: 'success', data: transformedCustomer });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 const getCustomerByEmail = async (req, res, next) => {
     try {
         const { email } = req.params;
