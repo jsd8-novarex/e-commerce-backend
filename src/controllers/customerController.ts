@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import validator from 'validator';
-
+import bcrypt from 'bcrypt';
 dayjs.extend(utc); // รองรับการทำงานกับ UTC
 dayjs.extend(timezone); // รองรับการตั้งเขตเวลา
 
@@ -223,6 +223,69 @@ export const getCustomerByEmail = async (
     res.status(200).json({
       status: 'success',
       data: customer,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      res.status(400).json({
+        status: 'failure',
+        message: 'Both oldPassword and newPassword are required.',
+      });
+      return;
+    }
+
+    // Fetch customer by ID
+    const customer = await customerModel.findById(id);
+    if (!customer) {
+      res.status(404).json({
+        status: 'failure',
+        message: `Customer with ID ${id} not found.`,
+      });
+      return;
+    }
+
+    // Verify old password
+    const isMatch = await bcrypt.compare(oldPassword, customer.password);
+    if (!isMatch) {
+      res.status(400).json({
+        status: 'failure',
+        message: 'Old password is incorrect.',
+      });
+      return;
+    }
+
+    // Validate new password strength
+    if (!isValidPassword(newPassword)) {
+      res.status(400).json({
+        status: 'failure',
+        message:
+          'Password must be at least 8 characters long and contain at least one uppercase and one lowercase letter.',
+      });
+      return;
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    customer.password = await bcrypt.hash(newPassword, salt);
+
+    // Save the updated customer
+    await customer.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password updated successfully.',
     });
   } catch (error) {
     next(error);
