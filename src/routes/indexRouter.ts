@@ -13,5 +13,5 @@ router.get('/', (req: Request, res: Response) => {
 router.use('/customer', customerRouter);
 router.use('/product', productRouter);
 router.use('/cart', cartRouter);
-router.use('/api/auth', authRoutes);
+router.use('/auth', authRoutes);
 export default router;

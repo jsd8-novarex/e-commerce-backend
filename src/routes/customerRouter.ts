@@ -5,6 +5,7 @@ import {
   createCustomer,
   updateCustomer,
   getCustomerByEmail,
+  changePassword,
 } from '../controllers/customerController';
 import { authenticateToken } from '../middlewares/authMiddleware';
 
@@ -17,5 +18,5 @@ router.get('/:id', getCustomerById);
 router.post('/', createCustomer);
 router.put('/:id', updateCustomer);
 router.get('/email/:email', getCustomerByEmail);
-
+router.put('/customer/:id/change-password', changePassword);
 export default router;
