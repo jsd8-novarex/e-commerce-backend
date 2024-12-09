@@ -52,4 +52,9 @@ const customerSchema = new Schema<CustomerDocument>(
   }
 );
 
-export default mongoose.model<CustomerDocument>('Customer', customerSchema);
+const customerModel = mongoose.model<CustomerDocument>(
+  'Customer',
+  customerSchema,
+  'customer'
+);
+export default customerModel;
