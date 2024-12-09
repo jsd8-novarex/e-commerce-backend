@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addProduct = exports.getProductById = exports.getProduct = void 0;
+exports.deleteProduct = exports.updateProduct = exports.addProduct = exports.getProductById = exports.getProduct = void 0;
 const productModel_1 = __importDefault(require("../models/product/productModel"));
 // GET: Fetch all product
 const getProduct = async (req, res, next) => {
@@ -101,3 +101,50 @@ const addProduct = async (req, res) => {
     }
 };
 exports.addProduct = addProduct;
+// update สินค้า
+const updateProduct = async (req, res, next) => {
+    try {
+        const { id } = req.params; // ดึง ID จาก URL
+        const updateData = req.body; // ข้อมูลที่จะอัปเดต
+        const updatedProduct = await productModel_1.default.findByIdAndUpdate(id, updateData, { new: true });
+        if (!updateProduct) {
+            res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Product updated',
+            data: updatedProduct
+        });
+    }
+    catch (error) {
+        next(error); // ส่ง error ไปยัง middleware
+    }
+};
+exports.updateProduct = updateProduct;
+// DELETE: ลบข้อมูลสินค้า
+const deleteProduct = async (req, res, next) => {
+    try {
+        const { id } = req.params; // ดึง ID จาก URL
+        const deletedProduct = await productModel_1.default.findByIdAndDelete(id);
+        if (!deletedProduct) {
+            res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Product deleted',
+            data: deletedProduct
+        });
+    }
+    catch (error) {
+        next(error); // ส่ง error ไปยัง middleware
+    }
+};
+exports.deleteProduct = deleteProduct;

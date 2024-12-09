@@ -151,5 +151,59 @@ const addProduct = async (req: Request, res: Response) => {
     console.error('Error adding product:', error);
   }
 };
+// update สินค้า
+const updateProduct = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params; // ดึง ID จาก URL
+    const updateData = req.body; // ข้อมูลที่จะอัปเดต
 
-export { getProduct, getProductById, addProduct };
+    const updatedProduct = await productModel.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!updateProduct) {
+        res.status(404).json({
+        success: false, 
+        message: 'Product not found'
+      })
+      return;
+    }
+    res.status(200).json({ 
+      success: true, 
+      message: 'Product updated', 
+      data: updatedProduct });
+  } catch (error) {
+    next(error); // ส่ง error ไปยัง middleware
+  }
+};
+// DELETE: ลบข้อมูลสินค้า
+const deleteProduct = async (
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params; // ดึง ID จาก URL
+
+    const deletedProduct = await productModel.findByIdAndDelete(id);
+
+    if (!deletedProduct) {
+        res.status(404).json({ 
+        success: false, 
+        message: 'Product not found' 
+      });
+      return;
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Product deleted', 
+      data: deletedProduct });
+  } catch (error) {
+    next(error); // ส่ง error ไปยัง middleware
+  }
+};
+
+export { getProduct, getProductById, addProduct, updateProduct, deleteProduct };
