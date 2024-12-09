@@ -1,12 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { getProduct, getProductById, addProduct } from  '../controllers/productController';
+import { getProduct, getProductById, getProductChoice, addProduct } from  '../controllers/productController';
 
 const productRouter = express.Router();
 
 productRouter.get('/', getProduct);
-// productRouter.get('/:id', getProductById);
-// productRouter.get('/:id/:choiceId', getProductById);
-productRouter.post('/singleproduct', getProductById);
+productRouter.get('/:productId', getProductById);
+productRouter.get('/:productId/:choiceId', getProductChoice);
 productRouter.post('/add', addProduct);
 
 export default productRouter;
