@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addItemToCart = exports.postCurrentCart = exports.getCartByCustomerId = void 0;
-const cartModel_1 = __importDefault(require("../models/cartModel"));
-const productModel_1 = __importDefault(require("../models/product/productModel"));
+exports.removeItemFromCart = exports.updateItemQuantity = exports.addItemToCart = exports.postCurrentCart = exports.getCartByCustomerId = void 0;
+const cartModel_1 = __importDefault(require("../../models/cartModel"));
+const productModel_1 = __importDefault(require("../../models/product/productModel"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const getCartByCustomerId = async (req, res) => {
     try {
@@ -110,6 +110,7 @@ const addItemToCart = async (req, res) => {
                     quantity,
                 });
             }
+            cart.status = 'active';
             cart.last_updated_timestamp = new Date();
             cart.last_op_id = new mongoose_1.default.Types.ObjectId(customerId);
             await cart.save();
@@ -138,3 +139,72 @@ const addItemToCart = async (req, res) => {
     }
 };
 exports.addItemToCart = addItemToCart;
+const updateItemQuantity = async (req, res) => {
+    try {
+        const { customerId, productChoiceId, quantity, existingCart, } = req.body;
+        if (existingCart) {
+            const cart = await cartModel_1.default.findById(existingCart._id);
+            if (!cart) {
+                res.status(404).json({ success: false, message: 'Cart not found' });
+                return;
+            }
+            const index = cart.cart_item.findIndex((item) => item.product_choice_id.toString() === productChoiceId);
+            if (index === -1) {
+                res.status(404).json({ success: false, message: 'Cart not found' });
+                return;
+            }
+            if (quantity > 0) {
+                cart.cart_item[index].quantity = quantity;
+            }
+            else {
+                res.status(400).json({
+                    success: false,
+                    message: 'Quantity must be greater than 0',
+                });
+                return;
+            }
+            cart.last_updated_timestamp = new Date();
+            cart.last_op_id = new mongoose_1.default.Types.ObjectId(customerId);
+            await cart.save();
+            res
+                .status(200)
+                .json({ success: true, message: 'Quantity updated successfully' });
+            return;
+        }
+        res.status(404).json({ success: false, message: 'Cart not found' });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.updateItemQuantity = updateItemQuantity;
+const removeItemFromCart = async (req, res) => {
+    try {
+        const { customerId, productChoiceId, existingCart, } = req.body;
+        if (existingCart) {
+            const cart = await cartModel_1.default.findById(existingCart._id);
+            if (!cart) {
+                res.status(404).json({ success: false, message: 'Cart not found' });
+                return;
+            }
+            const index = cart.cart_item.findIndex((item) => item.product_choice_id.toString() === productChoiceId);
+            if (index !== -1) {
+                cart.cart_item.splice(index, 1);
+            }
+            cart.last_updated_timestamp = new Date();
+            cart.last_op_id = new mongoose_1.default.Types.ObjectId(customerId);
+            await cart.save();
+            res
+                .status(200)
+                .json({ success: true, message: 'Item removed from cart' });
+            return;
+        }
+        res.status(404).json({ success: false, message: 'Cart not found' });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+exports.removeItemFromCart = removeItemFromCart;

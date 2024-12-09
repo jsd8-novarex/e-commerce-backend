@@ -11,8 +11,6 @@ const cartItemSchema = new mongoose_1.default.Schema({
     },
     product_choice_id: { type: mongoose_1.default.Schema.Types.ObjectId, required: true },
     quantity: { type: Number, required: true },
-    creator_id: { type: mongoose_1.default.Schema.Types.ObjectId, required: true },
-    last_op_id: { type: mongoose_1.default.Schema.Types.ObjectId, required: true },
 }, {
     _id: false,
 });
@@ -49,8 +47,6 @@ const cartSchema = new mongoose_1.default.Schema({
     creator_id: { type: mongoose_1.default.Schema.Types.ObjectId, required: true },
     last_op_id: { type: mongoose_1.default.Schema.Types.ObjectId, required: true },
     tram_status: { type: Boolean, default: true },
-}, {
-    versionKey: false,
 });
 const cartModel = mongoose_1.default.model('cart', cartSchema, 'cart');
 exports.default = cartModel;

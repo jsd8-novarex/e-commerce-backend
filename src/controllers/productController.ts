@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
 import productModel from '../models/product/productModel';
 
 // GET: Fetch all product
@@ -9,7 +8,16 @@ const getProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const products = await productModel.find();
+    const { gender } = req.query;
+    // เช็ค gender และทำการค้นหาข้อมูลสินค้า
+    let products;
+    if (gender === "WOMAN") {      
+      products = await productModel.find({ gender: "WOMAN" });
+    } else if (gender === "MAN") {      
+      products = await productModel.find({ gender: "MAN" });
+    } else {      
+      products = await productModel.find();
+    }
     res.status(200).json({
       status: 'success',
       products,
@@ -19,14 +27,14 @@ const getProduct = async (
   }
 };
 
-// GET: Fetch  product by ID
+// GET: Fetch product by ID
 const getProductById = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { productId, choiceId } = req.body;
+    const { productId } = req.params; 
     const product = await productModel.findById(productId);
 
     if (!product) {
@@ -37,64 +45,61 @@ const getProductById = async (
       return;
     }
 
-    // ถ้ามี choiceId ค้นหาตัวเลือกของสินค้า
-    if (choiceId) {
-      const productChoice = product.product_choices?.find(
-        (choice) => String(choice.id) === String(choiceId)
-      );
-
-      if (!productChoice) {
-        res.status(404).json({
-          status: 'failure',
-          message: 'Product choice not found',
-        });
-        return;
-      }
-
-      res.status(200).json({
-        message: 'Product choice fetched successfully',
-        data: productChoice,
-      });
-      return;
-    }
-
-    // ถ้าไม่มี choiceId ให้ส่งข้อมูลสินค้าทั้งหมด
     res.status(200).json({
       message: 'Product fetched successfully',
       data: product,
     });
   } catch (error: any) {
-    res.status(400).json({ status: 'failure', message: error.message });
+    res.status(400).json({ 
+      status: 'failure', 
+      message: error.message 
+    });
+  }
+};
+
+// GET: Fetch product choice 
+const getProductChoice = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { productId, choiceId } = req.params; 
+    const product = await productModel.findById(productId);
+
+    if (!product) {
+      res.status(404).json({
+        status: 'failure',
+        message: 'Product not found',
+      });
+      return;
+    }
+
+    const productChoice = product.product_choices?.find(
+      (choice) => String(choice.id) === String(choiceId)
+    );
+
+    if (!productChoice) {
+      res.status(404).json({
+        status: 'failure',
+        message: 'Product choice not found',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Product choice fetched successfully',
+      data: productChoice,
+    });
+  } catch (error: any) {
+    res.status(400).json({ 
+      status: 'failure', 
+      message: error.message 
+    });
   }
 };
 
 // POST: Create a new product
-interface ProductChoiceInput {
-  color: string;
-  size: string;
-  price: number;
-  sku: string;
-  quantity: number;
-  images: Array<{
-    url: string;
-    index: number;
-  }>;
-}
-
-interface ProductInput {
-  name: string;
-  brand: string;
-  category: string;
-  gender: string;
-  description: string;
-  product_choices: ProductChoiceInput[];
-  create_timestamp: Date;
-  last_updated_timestamp: Date;
-  creator_id: string;
-  last_op_id: string;
-  tram_status?: boolean;
-}
-
 const addProduct = async (req: Request, res: Response) => {
   try {
     const {
@@ -106,7 +111,7 @@ const addProduct = async (req: Request, res: Response) => {
       product_choices,
       creator_id,
       last_op_id,
-    }: ProductInput = req.body;
+    } = req.body;
 
     if (
       !name ||
@@ -151,59 +156,5 @@ const addProduct = async (req: Request, res: Response) => {
     console.error('Error adding product:', error);
   }
 };
-// update สินค้า
-const updateProduct = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> => {
-  try {
-    const { id } = req.params; // ดึง ID จาก URL
-    const updateData = req.body; // ข้อมูลที่จะอัปเดต
 
-    const updatedProduct = await productModel.findByIdAndUpdate(id, updateData, { new: true });
-
-    if (!updateProduct) {
-        res.status(404).json({
-        success: false, 
-        message: 'Product not found'
-      })
-      return;
-    }
-    res.status(200).json({ 
-      success: true, 
-      message: 'Product updated', 
-      data: updatedProduct });
-  } catch (error) {
-    next(error); // ส่ง error ไปยัง middleware
-  }
-};
-// DELETE: ลบข้อมูลสินค้า
-const deleteProduct = async (
-    req: Request, 
-    res: Response, 
-    next: NextFunction
-): Promise<void> => {
-  try {
-    const { id } = req.params; // ดึง ID จาก URL
-
-    const deletedProduct = await productModel.findByIdAndDelete(id);
-
-    if (!deletedProduct) {
-        res.status(404).json({ 
-        success: false, 
-        message: 'Product not found' 
-      });
-      return;
-    }
-
-    res.status(200).json({ 
-      success: true, 
-      message: 'Product deleted', 
-      data: deletedProduct });
-  } catch (error) {
-    next(error); // ส่ง error ไปยัง middleware
-  }
-};
-
-export { getProduct, getProductById, addProduct, updateProduct, deleteProduct };
+export { getProduct, getProductById, addProduct };
