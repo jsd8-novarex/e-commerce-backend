@@ -8,8 +8,13 @@ const getProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { gender } = req.query;
+    let { gender } = req.query;
     // เช็ค gender และทำการค้นหาข้อมูลสินค้า
+
+    if (gender) {
+      gender = (gender as string).toUpperCase();
+    }
+    
     let products;
     if (gender === "WOMAN") {      
       products = await productModel.find({ gender: "WOMAN" });
@@ -22,8 +27,8 @@ const getProduct = async (
       status: 'success',
       products,
     });
-  } catch (error: any) {
-    res.status(400).send({ status: 'failure', message: error.message });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -49,11 +54,8 @@ const getProductById = async (
       message: 'Product fetched successfully',
       data: product,
     });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'failure', 
-      message: error.message 
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -91,11 +93,8 @@ const getProductChoice = async (
       message: 'Product choice fetched successfully',
       data: productChoice,
     });
-  } catch (error: any) {
-    res.status(400).json({ 
-      status: 'failure', 
-      message: error.message 
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
