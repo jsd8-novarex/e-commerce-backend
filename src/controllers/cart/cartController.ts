@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import cartModel from '../../models/cartModel';
 import productModel from '../../models/product/productModel';
 import { CartItemType } from '../../types/cart.type';
@@ -10,7 +10,11 @@ import {
   updateItemQuantityRepBodyType,
 } from './cartController.type';
 
-const getCartByCustomerId = async (req: Request, res: Response) => {
+const getCartByCustomerId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { customerId } = req.body;
 
@@ -18,11 +22,16 @@ const getCartByCustomerId = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, cart: isCart });
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
+    // res.status(500).json({ success: false, message: error.message });
   }
 };
 
-const postCurrentCart = async (req: Request, res: Response) => {
+const postCurrentCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { existingCart }: PostCurrentCartRepBodyType = req.body;
 
@@ -83,6 +92,7 @@ const postCurrentCart = async (req: Request, res: Response) => {
           payment_method: existingCart.payment_method,
           payment_status: existingCart.payment_status,
           payment_timestamp: existingCart.payment_timestamp,
+          total_price: existingCart.total_price,
           create_timestamp: existingCart.create_timestamp,
           last_updated_timestamp: existingCart.last_updated_timestamp,
           creator_id: existingCart.creator_id,
@@ -102,11 +112,16 @@ const postCurrentCart = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Error in postCurrentCart:', error);
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
+    // res.status(500).json({ success: false, message: error.message });
   }
 };
 
-const addItemToCart = async (req: Request, res: Response) => {
+const addItemToCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const {
       customerId,
@@ -114,6 +129,15 @@ const addItemToCart = async (req: Request, res: Response) => {
       quantity,
       existingCart,
     }: AddItemToCartRepBodyType = req.body;
+
+    if (!quantity) {
+      res.status(400).json({
+        success: false,
+        message:
+          'Quantity is required or invalid. Please check your cart and try again.',
+      });
+      return;
+    }
 
     if (existingCart) {
       const cart = await cartModel.findById(existingCart._id);
@@ -152,7 +176,13 @@ const addItemToCart = async (req: Request, res: Response) => {
       status: 'pending',
       payment_method: 'none',
       payment_status: 'not_paid',
-      cart_item: [],
+      cart_item: [
+        {
+          id: new mongoose.Types.ObjectId(),
+          product_choice_id: new mongoose.Types.ObjectId(productChoiceId),
+          quantity,
+        },
+      ],
       creator_id: customerId,
       last_op_id: customerId,
     });
@@ -163,11 +193,16 @@ const addItemToCart = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
+    // res.status(500).json({ success: false, message: error.message });
   }
 };
 
-const updateItemQuantity = async (req: Request, res: Response) => {
+const updateItemQuantity = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const {
       customerId,
@@ -175,6 +210,15 @@ const updateItemQuantity = async (req: Request, res: Response) => {
       quantity,
       existingCart,
     }: updateItemQuantityRepBodyType = req.body;
+    
+    if (!quantity) {
+      res.status(400).json({
+        success: false,
+        message:
+          'Quantity is required or invalid. Please check your cart and try again.',
+      });
+      return;
+    }
 
     if (existingCart) {
       const cart = await cartModel.findById(existingCart._id);
@@ -217,11 +261,16 @@ const updateItemQuantity = async (req: Request, res: Response) => {
     res.status(404).json({ success: false, message: 'Cart not found' });
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
+    // res.status(500).json({ success: false, message: error.message });
   }
 };
 
-const removeItemFromCart = async (req: Request, res: Response) => {
+const removeItemFromCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const {
       customerId,
@@ -241,10 +290,14 @@ const removeItemFromCart = async (req: Request, res: Response) => {
         (item) => item.product_choice_id.toString() === productChoiceId
       );
 
-      if (index !== -1) {
-        cart.cart_item.splice(index, 1);
+      if (index === -1) {
+        res
+          .status(404)
+          .json({ success: false, message: 'Item not found in cart' });
+        return;
       }
 
+      cart.cart_item.splice(index, 1);
       cart.last_updated_timestamp = new Date();
       cart.last_op_id = new mongoose.Types.ObjectId(customerId);
       await cart.save();
@@ -258,7 +311,8 @@ const removeItemFromCart = async (req: Request, res: Response) => {
     res.status(404).json({ success: false, message: 'Cart not found' });
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
+    // res.status(500).json({ success: false, message: error.message });
   }
 };
 
