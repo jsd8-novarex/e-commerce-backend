@@ -38,7 +38,12 @@ export const loginCustomer = async (
       expiresIn: '1d',
     });
 
-    res.status(200).json({ token });
+    // ส่ง customerId พร้อม token
+    res.status(200).json({
+      token,
+      customerId: user._id, // เพิ่ม customerId
+      email: user.email, // เพิ่ม email
+    });
   } catch (error) {
     next(error);
   }
