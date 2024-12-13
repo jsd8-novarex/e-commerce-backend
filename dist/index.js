@@ -12,8 +12,23 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 4000;
 (0, mongodb_1.default)();
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.VERCEL_ONE_URL,
+    process.env.VERCEL_TWO_URL,
+];
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 }));
 app.use(express_1.default.json());
