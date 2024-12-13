@@ -1,17 +1,45 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
+import {
+  addItemToCart,
+  getCartByCustomerId,
+  postCurrentCart,
+  removeItemFromCart,
+  updateItemQuantity,
+} from '../controllers/cart/cartController';
+import { validateCustomerIdMiddleware } from '../middlewares/customer/customerMiddleware';
+import { validateCartByCustomerIdMiddleware } from '../middlewares/cart/cartMiddleware';
+import { validateProductChoiceIdMiddleware } from '../middlewares/product/productMiddleware';
 
-const getCartRouter = express.Router();
+const cartRouter = express.Router();
 
-getCartRouter.get('/', getCart);
+cartRouter.get('/', validateCustomerIdMiddleware, getCartByCustomerId);
 
-export async function getCart(req: Request, res: Response, next: NextFunction) {
-  try {
-    res.status(200).send({
-      message: 'test getCart',
-    });
-  } catch (error: any) {
-    res.status(400).send({ status: 'failure', message: error.message });
-  }
-}
+cartRouter.post(
+  '/',
+  validateCustomerIdMiddleware,
+  validateCartByCustomerIdMiddleware,
+  postCurrentCart
+);
 
-export default getCartRouter;
+cartRouter.post(
+  '/add',
+  validateProductChoiceIdMiddleware,
+  validateCartByCustomerIdMiddleware,
+  addItemToCart
+);
+
+cartRouter.post(
+  '/quantity',
+  validateProductChoiceIdMiddleware,
+  validateCartByCustomerIdMiddleware,
+  updateItemQuantity
+);
+
+cartRouter.post(
+  '/delete',
+  validateProductChoiceIdMiddleware,
+  validateCartByCustomerIdMiddleware,
+  removeItemFromCart
+);
+
+export default cartRouter;

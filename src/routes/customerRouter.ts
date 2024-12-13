@@ -1,21 +1,24 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
+import {
+  getAllCustomers,
+  getCustomerById,
+  createCustomer,
+  updateCustomer,
+  getCustomerByEmail,
+  changePassword,
+  verifyOldPassword,
+} from '../controllers/customerController';
+import { authenticateToken } from '../middlewares/authMiddleware';
 
-const customerRouter = express.Router();
+const router = express.Router();
 
-customerRouter.get('/', getCustomers);
+router.use(authenticateToken);
 
-export async function getCustomers(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    res.status(200).send({
-      message: 'test getCustomers',
-    });
-  } catch (error: any) {
-    res.status(400).send({ status: 'failure', message: error.message });
-  }
-}
-
-export default customerRouter;
+router.get('/', getAllCustomers);
+router.get('/:id', getCustomerById);
+router.post('/', createCustomer);
+router.put('/:id', updateCustomer);
+router.get('/email/:email', getCustomerByEmail);
+router.put('/:id/change-password', changePassword);
+router.post('/:id/verify-password', verifyOldPassword);
+export default router;
