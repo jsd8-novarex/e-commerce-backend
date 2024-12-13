@@ -51,6 +51,7 @@ const postCurrentCart = async (
           $addFields: {
             product_choice_id: '$product_choices._id',
             color: '$product_choices.color',
+            size: '$product_choices.size',
             price: '$product_choices.price',
             image_url: {
               $arrayElemAt: ['$product_choices.images.url', 0],
@@ -63,6 +64,7 @@ const postCurrentCart = async (
             product_name: '$name',
             product_choice_id: 1,
             color: 1,
+            size: 1,
             price: 1,
             image_url: 1,
           },

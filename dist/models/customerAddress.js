@@ -24,40 +24,35 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const customerSchema = new mongoose_1.Schema({
-    name: {
-        type: String,
+// Schema ของ CustomerAddress
+const customerAddressSchema = new mongoose_1.Schema({
+    customer_id: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'Customer',
         required: true,
-        default: function () {
-            return this.email;
-        },
     },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    mobile_phone: { type: String, default: null },
-    date_of_birth: { type: Date, default: null },
+    postal_code: { type: String, default: null },
+    province: { type: String, default: null },
+    district: { type: String, default: null },
+    subdistrict: { type: String, default: null },
+    address: { type: String, default: null },
     creator_id: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'Customer',
         required: true,
-        default: function () {
-            return this._id;
-        },
     },
     last_op_id: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'Customer',
         required: true,
-        default: function () {
-            return this._id;
-        },
     },
     tram_status: { type: Boolean, default: true },
 }, {
     timestamps: {
         createdAt: 'create_timestamp',
-        updatedAt: 'last_updated_timestamp',
+        updatedAt: 'last_update_timestamp',
     },
 });
-const customerModel = mongoose_1.default.model('Customer', customerSchema, 'customer');
-exports.default = customerModel;
+// Model ของ CustomerAddress
+const customerAddressModel = mongoose_1.default.model('CustomerAddress', customerAddressSchema, 'customeraddress');
+exports.default = customerAddressModel;
