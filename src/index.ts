@@ -10,9 +10,23 @@ const port = process.env.PORT || 4000;
 
 mongodb();
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.VERCEL_ONE_URL,
+  process.env.VERCEL_TWO_URL,
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   })
 );

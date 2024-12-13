@@ -7,7 +7,7 @@ exports.removeItemFromCart = exports.updateItemQuantity = exports.addItemToCart 
 const cartModel_1 = __importDefault(require("../../models/cartModel"));
 const productModel_1 = __importDefault(require("../../models/product/productModel"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const getCartByCustomerId = async (req, res) => {
+const getCartByCustomerId = async (req, res, next) => {
     try {
         const { customerId } = req.body;
         const isCart = await cartModel_1.default.find({ customer_id: customerId });
@@ -15,11 +15,12 @@ const getCartByCustomerId = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
+        // res.status(500).json({ success: false, message: error.message });
     }
 };
 exports.getCartByCustomerId = getCartByCustomerId;
-const postCurrentCart = async (req, res) => {
+const postCurrentCart = async (req, res, next) => {
     try {
         const { existingCart } = req.body;
         if (existingCart) {
@@ -35,6 +36,7 @@ const postCurrentCart = async (req, res) => {
                     $addFields: {
                         product_choice_id: '$product_choices._id',
                         color: '$product_choices.color',
+                        size: '$product_choices.size',
                         price: '$product_choices.price',
                         image_url: {
                             $arrayElemAt: ['$product_choices.images.url', 0],
@@ -47,6 +49,7 @@ const postCurrentCart = async (req, res) => {
                         product_name: '$name',
                         product_choice_id: 1,
                         color: 1,
+                        size: 1,
                         price: 1,
                         image_url: 1,
                     },
@@ -69,6 +72,7 @@ const postCurrentCart = async (req, res) => {
                 payment_method: existingCart.payment_method,
                 payment_status: existingCart.payment_status,
                 payment_timestamp: existingCart.payment_timestamp,
+                total_price: existingCart.total_price,
                 create_timestamp: existingCart.create_timestamp,
                 last_updated_timestamp: existingCart.last_updated_timestamp,
                 creator_id: existingCart.creator_id,
@@ -86,13 +90,21 @@ const postCurrentCart = async (req, res) => {
     }
     catch (error) {
         console.error('Error in postCurrentCart:', error);
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
+        // res.status(500).json({ success: false, message: error.message });
     }
 };
 exports.postCurrentCart = postCurrentCart;
-const addItemToCart = async (req, res) => {
+const addItemToCart = async (req, res, next) => {
     try {
         const { customerId, productChoiceId, quantity, existingCart, } = req.body;
+        if (!quantity) {
+            res.status(400).json({
+                success: false,
+                message: 'Quantity is required or invalid. Please check your cart and try again.',
+            });
+            return;
+        }
         if (existingCart) {
             const cart = await cartModel_1.default.findById(existingCart._id);
             if (!cart) {
@@ -124,7 +136,13 @@ const addItemToCart = async (req, res) => {
             status: 'pending',
             payment_method: 'none',
             payment_status: 'not_paid',
-            cart_item: [],
+            cart_item: [
+                {
+                    id: new mongoose_1.default.Types.ObjectId(),
+                    product_choice_id: new mongoose_1.default.Types.ObjectId(productChoiceId),
+                    quantity,
+                },
+            ],
             creator_id: customerId,
             last_op_id: customerId,
         });
@@ -135,13 +153,21 @@ const addItemToCart = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
+        // res.status(500).json({ success: false, message: error.message });
     }
 };
 exports.addItemToCart = addItemToCart;
-const updateItemQuantity = async (req, res) => {
+const updateItemQuantity = async (req, res, next) => {
     try {
         const { customerId, productChoiceId, quantity, existingCart, } = req.body;
+        if (!quantity) {
+            res.status(400).json({
+                success: false,
+                message: 'Quantity is required or invalid. Please check your cart and try again.',
+            });
+            return;
+        }
         if (existingCart) {
             const cart = await cartModel_1.default.findById(existingCart._id);
             if (!cart) {
@@ -175,11 +201,12 @@ const updateItemQuantity = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
+        // res.status(500).json({ success: false, message: error.message });
     }
 };
 exports.updateItemQuantity = updateItemQuantity;
-const removeItemFromCart = async (req, res) => {
+const removeItemFromCart = async (req, res, next) => {
     try {
         const { customerId, productChoiceId, existingCart, } = req.body;
         if (existingCart) {
@@ -189,9 +216,13 @@ const removeItemFromCart = async (req, res) => {
                 return;
             }
             const index = cart.cart_item.findIndex((item) => item.product_choice_id.toString() === productChoiceId);
-            if (index !== -1) {
-                cart.cart_item.splice(index, 1);
+            if (index === -1) {
+                res
+                    .status(404)
+                    .json({ success: false, message: 'Item not found in cart' });
+                return;
             }
+            cart.cart_item.splice(index, 1);
             cart.last_updated_timestamp = new Date();
             cart.last_op_id = new mongoose_1.default.Types.ObjectId(customerId);
             await cart.save();
@@ -204,7 +235,8 @@ const removeItemFromCart = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
+        // res.status(500).json({ success: false, message: error.message });
     }
 };
 exports.removeItemFromCart = removeItemFromCart;
