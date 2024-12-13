@@ -4,7 +4,7 @@ import customerRouter from './customerRouter';
 import cartRouter from './cartRouter';
 import authRoutes from './authRoutes';
 import customerAddressRouter from './customerAddressRouter';
-
+import paymentRouter from './paymentRoutes';
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
@@ -16,4 +16,5 @@ router.use('/product', productRouter);
 router.use('/cart', cartRouter);
 router.use('/auth', authRoutes);
 router.use('/customeraddress', customerAddressRouter);
+router.use('/payment', paymentRouter);
 export default router;

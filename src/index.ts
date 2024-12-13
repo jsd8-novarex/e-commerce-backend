@@ -16,6 +16,7 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(express.json());
 // app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
@@ -24,13 +25,11 @@ app.use('/api', router);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
-  res
-    .status(500)
-    .json({
-      success: false,
-      message: 'Internal Server Error 😖',
-      error: err.message,
-    });
+  res.status(500).json({
+    success: false,
+    message: 'Internal Server Error 😖',
+    error: err.message,
+  });
 });
 
 app.listen(port, () => {
