@@ -13,7 +13,7 @@ export interface CartType {
   payment_method: string;
   payment_status: string;
   payment_timestamp: Date | null;
-  total_price: number
+  total_price: number;
   create_timestamp: Date;
   last_updated_timestamp: Date;
   creator_id: Types.ObjectId;

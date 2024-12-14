@@ -212,7 +212,7 @@ const updateItemQuantity = async (
       quantity,
       existingCart,
     }: updateItemQuantityRepBodyType = req.body;
-    
+
     if (!quantity) {
       res.status(400).json({
         success: false,
@@ -318,10 +318,99 @@ const removeItemFromCart = async (
   }
 };
 
+const postCompleteCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const session = await mongoose.startSession(); // ใช้ transaction
+  session.startTransaction();
+
+  try {
+    const {
+      cartId,
+      paymentMethod,
+    }: { cartId: string; paymentMethod: 'none' | 'credit_card' } = req.body;
+
+    if (!['credit_card'].includes(paymentMethod)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid or unsupported payment method',
+      });
+
+      return;
+    }
+
+    const cart = await cartModel.findById(cartId);
+
+    if (!cart) {
+      res.status(404).json({ success: false, message: 'Cart not found' });
+      return;
+    }
+
+    if (cart.status !== 'active') {
+      res.status(400).json({
+        success: false,
+        message: 'Cart is not in a valid state for completion',
+      });
+      return;
+    }
+
+    const updatePromises = cart.cart_item.map(async (item) => {
+      const productChoice = await productModel.findOneAndUpdate(
+        { 'product_choices._id': item.product_choice_id },
+        { $inc: { 'product_choices.$.quantity': -item.quantity } },
+        { new: true, session }
+      );
+
+      if (!productChoice) {
+        res.status(404).json({
+          success: false,
+          message: `Product choice with ID ${item.product_choice_id} not found`,
+        });
+        return;
+      }
+
+      const updatedChoice = productChoice.product_choices.find(
+        (choice) => choice._id.toString() === item.product_choice_id.toString()
+      );
+
+      if (updatedChoice && updatedChoice.quantity < 0) {
+        res.status(400).json({
+          success: false,
+          message: `Insufficient stock for product choice ID ${item.product_choice_id}`,
+        });
+        return;
+      }
+    });
+
+    await Promise.all(updatePromises);
+
+    cart.status = 'completed';
+    cart.payment_method = paymentMethod;
+    cart.payment_status = 'paid';
+    cart.payment_timestamp = new Date();
+    cart.last_updated_timestamp = new Date();
+    await cart.save();
+
+    await session.commitTransaction(); // ยืนยัน transaction
+    session.endSession();
+
+    res.status(200).json({ success: true, message: 'Cart payment completed' });
+  } catch (error) {
+    await session.abortTransaction(); // ยกเลิก transaction กรณีเกิดข้อผิดพลาด
+    session.endSession();
+
+    console.log(error);
+    next(error);
+  }
+};
+
 export {
   getCartByCustomerId,
   postCurrentCart,
   addItemToCart,
   updateItemQuantity,
   removeItemFromCart,
+  postCompleteCart,
 };
