@@ -1,5 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { getProduct, getProductById, getProductChoice, addProduct, updateProduct, deleteProduct } from  '../controllers/productController';
+import {
+  getProduct,
+  getProductById,
+  getProductChoice,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+} from '../controllers/productController';
 
 const productRouter = express.Router();
 

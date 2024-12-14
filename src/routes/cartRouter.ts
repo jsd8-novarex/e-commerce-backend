@@ -2,12 +2,16 @@ import express from 'express';
 import {
   addItemToCart,
   getCartByCustomerId,
+  postCompleteCart,
   postCurrentCart,
   removeItemFromCart,
   updateItemQuantity,
 } from '../controllers/cart/cartController';
 import { validateCustomerIdMiddleware } from '../middlewares/customer/customerMiddleware';
-import { validateCartByCustomerIdMiddleware } from '../middlewares/cart/cartMiddleware';
+import {
+  validateCartByCustomerIdMiddleware,
+  validateCartIdMiddleware,
+} from '../middlewares/cart/cartMiddleware';
 import { validateProductChoiceIdMiddleware } from '../middlewares/product/productMiddleware';
 
 const cartRouter = express.Router();
@@ -41,5 +45,7 @@ cartRouter.post(
   validateCartByCustomerIdMiddleware,
   removeItemFromCart
 );
+
+cartRouter.post('/payment', validateCartIdMiddleware, postCompleteCart);
 
 export default cartRouter;

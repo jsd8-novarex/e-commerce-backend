@@ -54,7 +54,9 @@ const cartSchema = new mongoose.Schema({
 cartSchema.pre('save', async function (next) {
   if (this.isModified('cart_item')) {
     try {
-      const productChoiceIds = this.cart_item.map(item => item.product_choice_id);
+      const productChoiceIds = this.cart_item.map(
+        (item) => item.product_choice_id
+      );
 
       const cartProductItems = await productModel.aggregate([
         { $unwind: '$product_choices' },
@@ -74,10 +76,13 @@ cartSchema.pre('save', async function (next) {
         },
       ]);
 
-      const productPriceMap = cartProductItems.reduce((acc: Record<string, number>, product: any) => {
-        acc[product.product_choice_id.toString()] = product.price;
-        return acc;
-      }, {});
+      const productPriceMap = cartProductItems.reduce(
+        (acc: Record<string, number>, product: any) => {
+          acc[product.product_choice_id.toString()] = product.price;
+          return acc;
+        },
+        {}
+      );
 
       this.total_price = this.cart_item.reduce((total, item) => {
         const price = productPriceMap[item.product_choice_id.toString()] || 0;
@@ -91,7 +96,6 @@ cartSchema.pre('save', async function (next) {
 
   next();
 });
-
 
 const cartModel = mongoose.model('cart', cartSchema, 'cart');
 export default cartModel;

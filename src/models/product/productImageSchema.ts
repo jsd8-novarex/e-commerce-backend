@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
-export const productImageSchema = new mongoose.Schema({   
+export const productImageSchema = new mongoose.Schema(
+  {
     url: {
       type: String,
       required: true,
@@ -8,6 +9,7 @@ export const productImageSchema = new mongoose.Schema({
     index: {
       type: Number,
       required: true,
-    },  
-}, {_id: false})
-
+    },
+  },
+  { _id: false }
+);

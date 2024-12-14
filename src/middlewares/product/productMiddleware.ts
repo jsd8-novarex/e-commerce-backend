@@ -45,9 +45,11 @@ const validateProductChoiceIdMiddleware = async (
     const isProduct = await productModel.findOne({
       'product_choices._id': productChoiceId,
     });
-    
+
     if (!isProduct) {
-      res.status(404).json({ success: false, message: 'Product Choice not found' });
+      res
+        .status(404)
+        .json({ success: false, message: 'Product Choice not found' });
       return;
     }
 
