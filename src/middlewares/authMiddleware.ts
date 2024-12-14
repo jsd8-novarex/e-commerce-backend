@@ -19,7 +19,7 @@ export const authenticateToken = (
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
     req.user = decoded; // เพิ่มข้อมูลผู้ใช้ใน Request
-    
+
     next();
   } catch (err) {
     res.status(403).json({ message: 'Invalid token.' });
