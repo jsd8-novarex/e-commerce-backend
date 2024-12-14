@@ -112,8 +112,8 @@ const placeOrderStripe = async (req, res, next) => {
         await newOrder.save();
         // Create Stripe session
         const session = await stripe.checkout.sessions.create({
-            success_url: `${req.headers.origin || 'http://localhost:4000'}/verify?success=true&orderId=${newOrder._id}`,
-            cancel_url: `${req.headers.origin || 'http://localhost:4000'}/verify?success=false&orderId=${newOrder._id}`,
+            success_url: `${req.headers.origin || process.env.VERCEL_ONE_URL}/verify?success=true&orderId=${newOrder._id}` || `${req.headers.origin || 'http://localhost:4000'}/verify?success=true&orderId=${newOrder._id}`,
+            cancel_url: `${req.headers.origin || process.env.VERCEL_ONE_URL}/verify?success=false&orderId=${newOrder._id}` || `${req.headers.origin || 'http://localhost:4000'}/verify?success=false&orderId=${newOrder._id}`,
             line_items,
             mode: 'payment',
         });
