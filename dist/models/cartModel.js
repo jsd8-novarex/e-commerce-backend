@@ -53,7 +53,7 @@ const cartSchema = new mongoose_1.default.Schema({
 cartSchema.pre('save', async function (next) {
     if (this.isModified('cart_item')) {
         try {
-            const productChoiceIds = this.cart_item.map(item => item.product_choice_id);
+            const productChoiceIds = this.cart_item.map((item) => item.product_choice_id);
             const cartProductItems = await productModel_1.default.aggregate([
                 { $unwind: '$product_choices' },
                 { $match: { 'product_choices._id': { $in: productChoiceIds } } },

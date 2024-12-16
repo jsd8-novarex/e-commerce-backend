@@ -14,4 +14,5 @@ cartRouter.post('/', customerMiddleware_1.validateCustomerIdMiddleware, cartMidd
 cartRouter.post('/add', productMiddleware_1.validateProductChoiceIdMiddleware, cartMiddleware_1.validateCartByCustomerIdMiddleware, cartController_1.addItemToCart);
 cartRouter.post('/quantity', productMiddleware_1.validateProductChoiceIdMiddleware, cartMiddleware_1.validateCartByCustomerIdMiddleware, cartController_1.updateItemQuantity);
 cartRouter.post('/delete', productMiddleware_1.validateProductChoiceIdMiddleware, cartMiddleware_1.validateCartByCustomerIdMiddleware, cartController_1.removeItemFromCart);
+cartRouter.post('/payment', cartMiddleware_1.validateCartIdMiddleware, cartController_1.postCompleteCart);
 exports.default = cartRouter;

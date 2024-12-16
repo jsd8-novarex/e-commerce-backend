@@ -10,4 +10,5 @@ const router = express_1.default.Router();
 router.post('/register', authController_1.registerCustomer);
 router.post('/login', authController_1.loginCustomer);
 // router.post('/admin/login', adminLogin);
+router.post('/check-email', authController_1.checkEmailCustomer);
 exports.default = router;
