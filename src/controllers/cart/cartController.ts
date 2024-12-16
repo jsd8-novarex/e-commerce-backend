@@ -348,7 +348,11 @@ const postCompleteCart = async (
       return;
     }
 
-    if (cart.status !== 'active') {
+    if (
+      !cart.status ||
+      cart.status === 'completed' ||
+      cart.status === 'cancelled'
+    ) {
       res.status(400).json({
         success: false,
         message: 'Cart is not in a valid state for completion',

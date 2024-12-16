@@ -38,14 +38,16 @@ const placeOrderStripe = async (req, res, next) => {
             province: customerAddress.province,
             postalCode: customerAddress.postal_code,
         };
-        // Fetch cart and validate
+        // Fetch cart and validate, excluding "completed" or "cancelled" carts
         const cart = await cartModel_1.default.findOne({
             customer_id: new mongoose_1.default.Types.ObjectId(customerId),
+            status: { $nin: ['completed', 'cancelled'] },
         });
         if (!cart || cart.cart_item.length === 0) {
-            res
-                .status(400)
-                .json({ success: false, message: 'Cart is empty or not found' });
+            res.status(400).json({
+                success: false,
+                message: 'Cart is empty, completed, cancelled, or not found',
+            });
             return;
         }
         // Fetch product details for the cart items

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerCustomer = exports.loginCustomer = void 0;
+exports.checkEmailCustomer = exports.registerCustomer = exports.loginCustomer = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const validator_1 = __importDefault(require("validator"));
@@ -93,3 +93,24 @@ const registerCustomer = async (req, res, next) => {
     }
 };
 exports.registerCustomer = registerCustomer;
+const checkEmailCustomer = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            res.status(400).json({ message: 'Email is required.' });
+            return;
+        }
+        const user = await customerModel2_1.default.findOne({ email }); // ตรวจสอบในฐานข้อมูล
+        if (user) {
+            res.status(200).json({ exists: true });
+        }
+        else {
+            res.status(200).json({ exists: false });
+        }
+    }
+    catch (error) {
+        console.error('Error checking email:', error);
+        next(error);
+    }
+};
+exports.checkEmailCustomer = checkEmailCustomer;

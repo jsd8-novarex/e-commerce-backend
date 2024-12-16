@@ -3,6 +3,7 @@ import {
   registerCustomer,
   loginCustomer,
   //   adminLogin,
+  checkEmailCustomer,
 } from '../controllers/authController';
 
 const router = express.Router();
@@ -11,5 +12,6 @@ const router = express.Router();
 router.post('/register', registerCustomer);
 router.post('/login', loginCustomer);
 // router.post('/admin/login', adminLogin);
+router.post('/check-email', checkEmailCustomer);
 
 export default router;
