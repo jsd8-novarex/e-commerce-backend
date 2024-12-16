@@ -3,26 +3,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProduct = exports.updateProduct = exports.addProduct = exports.getProductById = exports.getProduct = void 0;
+exports.deleteProduct = exports.updateProduct = exports.addProduct = exports.getProductChoice = exports.getProductById = exports.getProduct = void 0;
 const productModel_1 = __importDefault(require("../models/product/productModel"));
 // GET: Fetch all product
 const getProduct = async (req, res, next) => {
     try {
-        const products = await productModel_1.default.find();
+        let { gender } = req.query;
+        // เช็ค gender และทำการค้นหาข้อมูลสินค้า
+        if (gender) {
+            gender = gender.toUpperCase();
+        }
+        let products;
+        if (gender === 'WOMAN') {
+            products = await productModel_1.default.find({ gender: 'WOMAN' });
+        }
+        else if (gender === 'MAN') {
+            products = await productModel_1.default.find({ gender: 'MAN' });
+        }
+        else {
+            products = await productModel_1.default.find();
+        }
         res.status(200).json({
             status: 'success',
             products,
         });
     }
     catch (error) {
-        res.status(400).send({ status: 'failure', message: error.message });
+        next(error);
     }
 };
 exports.getProduct = getProduct;
-// GET: Fetch  product by ID
+// GET: Fetch product by ID
 const getProductById = async (req, res, next) => {
     try {
-        const { productId, choiceId } = req.body;
+        const { productId } = req.params;
         const product = await productModel_1.default.findById(productId);
         if (!product) {
             res.status(404).json({
@@ -31,33 +45,47 @@ const getProductById = async (req, res, next) => {
             });
             return;
         }
-        // ถ้ามี choiceId ค้นหาตัวเลือกของสินค้า
-        if (choiceId) {
-            const productChoice = product.product_choices?.find((choice) => String(choice.id) === String(choiceId));
-            if (!productChoice) {
-                res.status(404).json({
-                    status: 'failure',
-                    message: 'Product choice not found',
-                });
-                return;
-            }
-            res.status(200).json({
-                message: 'Product choice fetched successfully',
-                data: productChoice,
-            });
-            return;
-        }
-        // ถ้าไม่มี choiceId ให้ส่งข้อมูลสินค้าทั้งหมด
         res.status(200).json({
             message: 'Product fetched successfully',
             data: product,
         });
     }
     catch (error) {
-        res.status(400).json({ status: 'failure', message: error.message });
+        next(error);
     }
 };
 exports.getProductById = getProductById;
+// GET: Fetch product choice
+const getProductChoice = async (req, res, next) => {
+    try {
+        const { productId, choiceId } = req.params;
+        const product = await productModel_1.default.findById(productId);
+        if (!product) {
+            res.status(404).json({
+                status: 'failure',
+                message: 'Product not found',
+            });
+            return;
+        }
+        const productChoice = product.product_choices?.find((choice) => String(choice.id) === String(choiceId));
+        if (!productChoice) {
+            res.status(404).json({
+                status: 'failure',
+                message: 'Product choice not found',
+            });
+            return;
+        }
+        res.status(200).json({
+            message: 'Product choice fetched successfully',
+            data: productChoice,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getProductChoice = getProductChoice;
+// POST: Create a new product
 const addProduct = async (req, res) => {
     try {
         const { name, brand, category, gender, description, product_choices, creator_id, last_op_id, } = req.body;
@@ -101,7 +129,6 @@ const addProduct = async (req, res) => {
     }
 };
 exports.addProduct = addProduct;
-// update สินค้า
 const updateProduct = async (req, res, next) => {
     try {
         const { id } = req.params; // ดึง ID จาก URL
@@ -110,14 +137,14 @@ const updateProduct = async (req, res, next) => {
         if (!updateProduct) {
             res.status(404).json({
                 success: false,
-                message: 'Product not found'
+                message: 'Product not found',
             });
             return;
         }
         res.status(200).json({
             success: true,
             message: 'Product updated',
-            data: updatedProduct
+            data: updatedProduct,
         });
     }
     catch (error) {
@@ -133,14 +160,14 @@ const deleteProduct = async (req, res, next) => {
         if (!deletedProduct) {
             res.status(404).json({
                 success: false,
-                message: 'Product not found'
+                message: 'Product not found',
             });
             return;
         }
         res.status(200).json({
             success: true,
             message: 'Product deleted',
-            data: deletedProduct
+            data: deletedProduct,
         });
     }
     catch (error) {

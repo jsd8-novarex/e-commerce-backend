@@ -3,15 +3,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginCustomer = exports.registerCustomer = void 0;
+exports.checkEmailCustomer = exports.registerCustomer = exports.loginCustomer = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const validator_1 = __importDefault(require("validator"));
 const customerModel2_1 = __importDefault(require("../models/customerModel2"));
+const customerAddress_1 = __importDefault(require("../models/customerAddress"));
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+const loginCustomer = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        if (!validator_1.default.isEmail(email)) {
+            res.status(400).json({ message: 'Invalid email format.' });
+            return;
+        }
+        const user = await customerModel2_1.default.findOne({ email });
+        if (!user) {
+            res.status(401).json({ message: 'Invalid email or password.' });
+            return;
+        }
+        const isMatch = await bcrypt_1.default.compare(password, user.password);
+        if (!isMatch) {
+            res.status(401).json({ message: 'Invalid email or password.' });
+            return;
+        }
+        // สร้าง JWT Token
+        const token = jsonwebtoken_1.default.sign({ id: user._id }, JWT_SECRET, {
+            expiresIn: '1d',
+        });
+        // ส่ง customerId พร้อม token
+        res.status(200).json({
+            token,
+            customerId: user._id, // เพิ่ม customerId
+            email: user.email, // เพิ่ม email
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.loginCustomer = loginCustomer;
 const registerCustomer = async (req, res, next) => {
     try {
-        const { name, email, password1, password2 } = req.body;
+        const { email, password1, password2 } = req.body;
         if (!validator_1.default.isEmail(email)) {
             res.status(400).json({ message: 'Invalid email format.' });
             return;
@@ -35,9 +69,19 @@ const registerCustomer = async (req, res, next) => {
         }
         const hashedPassword = await bcrypt_1.default.hash(password1, 10);
         const newUser = await customerModel2_1.default.create({
-            name,
             email,
             password: hashedPassword,
+        });
+        // สร้าง Customer Address เป็นค่า default
+        await customerAddress_1.default.create({
+            customer_id: newUser._id, // ใช้ _id จาก User ที่สร้าง
+            postal_code: null,
+            province: null,
+            district: null,
+            subdistrict: null,
+            address: null,
+            creator_id: newUser._id, // ตั้ง creator เป็นตัวเอง
+            last_op_id: newUser._id,
         });
         const token = jsonwebtoken_1.default.sign({ id: newUser._id }, JWT_SECRET, {
             expiresIn: '1d',
@@ -49,31 +93,24 @@ const registerCustomer = async (req, res, next) => {
     }
 };
 exports.registerCustomer = registerCustomer;
-const loginCustomer = async (req, res, next) => {
+const checkEmailCustomer = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
-        if (!validator_1.default.isEmail(email)) {
-            res.status(400).json({ message: 'Invalid email format.' });
+        const { email } = req.body;
+        if (!email) {
+            res.status(400).json({ message: 'Email is required.' });
             return;
         }
-        const user = await customerModel2_1.default.findOne({ email });
-        if (!user) {
-            res.status(401).json({ message: 'Invalid email or password.' });
-            return;
+        const user = await customerModel2_1.default.findOne({ email }); // ตรวจสอบในฐานข้อมูล
+        if (user) {
+            res.status(200).json({ exists: true });
         }
-        const isMatch = await bcrypt_1.default.compare(password, user.password);
-        if (!isMatch) {
-            res.status(401).json({ message: 'Invalid email or password.' });
-            return;
+        else {
+            res.status(200).json({ exists: false });
         }
-        // สร้าง JWT Token
-        const token = jsonwebtoken_1.default.sign({ id: user._id }, JWT_SECRET, {
-            expiresIn: '1d',
-        });
-        res.status(200).json({ token });
     }
     catch (error) {
+        console.error('Error checking email:', error);
         next(error);
     }
 };
-exports.loginCustomer = loginCustomer;
+exports.checkEmailCustomer = checkEmailCustomer;

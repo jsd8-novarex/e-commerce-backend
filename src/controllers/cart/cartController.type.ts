@@ -11,7 +11,8 @@ export interface AddItemToCartRepBodyType {
   existingCart?: CartType;
 }
 
-export interface updateItemQuantityRepBodyType extends AddItemToCartRepBodyType {}
+export interface updateItemQuantityRepBodyType
+  extends AddItemToCartRepBodyType {}
 
 export interface RemoveItemFromCartRepBodyType {
   customerId: string;
