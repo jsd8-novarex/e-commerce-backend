@@ -42,15 +42,17 @@ const placeOrderStripe = async (
       postalCode: customerAddress.postal_code,
     };
 
-    // Fetch cart and validate
+    // Fetch cart and validate, excluding "completed" or "cancelled" carts
     const cart = await cartModel.findOne({
       customer_id: new mongoose.Types.ObjectId(customerId),
+      status: { $nin: ['completed', 'cancelled'] },
     });
 
     if (!cart || cart.cart_item.length === 0) {
-      res
-        .status(400)
-        .json({ success: false, message: 'Cart is empty or not found' });
+      res.status(400).json({
+        success: false,
+        message: 'Cart is empty, completed, cancelled, or not found',
+      });
       return;
     }
 
