@@ -14,11 +14,11 @@ const getProduct = async (req, res, next) => {
             gender = gender.toUpperCase();
         }
         let products;
-        if (gender === "WOMAN") {
-            products = await productModel_1.default.find({ gender: "WOMAN" });
+        if (gender === 'WOMAN') {
+            products = await productModel_1.default.find({ gender: 'WOMAN' });
         }
-        else if (gender === "MAN") {
-            products = await productModel_1.default.find({ gender: "MAN" });
+        else if (gender === 'MAN') {
+            products = await productModel_1.default.find({ gender: 'MAN' });
         }
         else {
             products = await productModel_1.default.find();
@@ -55,7 +55,7 @@ const getProductById = async (req, res, next) => {
     }
 };
 exports.getProductById = getProductById;
-// GET: Fetch product choice 
+// GET: Fetch product choice
 const getProductChoice = async (req, res, next) => {
     try {
         const { productId, choiceId } = req.params;
@@ -137,14 +137,14 @@ const updateProduct = async (req, res, next) => {
         if (!updateProduct) {
             res.status(404).json({
                 success: false,
-                message: 'Product not found'
+                message: 'Product not found',
             });
             return;
         }
         res.status(200).json({
             success: true,
             message: 'Product updated',
-            data: updatedProduct
+            data: updatedProduct,
         });
     }
     catch (error) {
@@ -160,14 +160,14 @@ const deleteProduct = async (req, res, next) => {
         if (!deletedProduct) {
             res.status(404).json({
                 success: false,
-                message: 'Product not found'
+                message: 'Product not found',
             });
             return;
         }
         res.status(200).json({
             success: true,
             message: 'Product deleted',
-            data: deletedProduct
+            data: deletedProduct,
         });
     }
     catch (error) {
