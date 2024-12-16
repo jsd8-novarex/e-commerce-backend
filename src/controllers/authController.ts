@@ -111,3 +111,29 @@ export const registerCustomer = async (
     next(error);
   }
 };
+
+export const checkEmailCustomer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({ message: 'Email is required.' });
+      return;
+    }
+
+    const user = await customerModel.findOne({ email }); // ตรวจสอบในฐานข้อมูล
+
+    if (user) {
+      res.status(200).json({ exists: true });
+    } else {
+      res.status(200).json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking email:', error);
+    next(error);
+  }
+};
